@@ -1,0 +1,17 @@
+{
+  "name": "adstraw-marketing-website",
+  "version": "1.0.0",
+  "description": "AdStraw - High-Converting 3-Step Video Monetization Web Platform for US Audience",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "firebase": "^13.1.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Viral Videos | Watch Trending US HD Movies & Viral Reels</title>
+  <meta name="description" content="Watch trending full movies, viral reels, and exclusive Hollywood clips in 4K HDR on Viral Videos. High-speed, mobile-optimized streaming." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#07090e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Viral Videos" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  
+  <!-- Modern US Streaming Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/src/style.css" />
+
+  <!-- Monetization: Pop-under Ad Script -->
+  <script data-cfasync="false" src="https://benchform.org/1/e7bb3983835e77b1cf05df34c655f772"></script>
+</head>
+<body>
+
+  <!-- Toast Notification Center -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main Shell (Responsive All Device Size) -->
+  <div class="app-wrapper" id="app-wrapper">
+
+    <!-- App Sticky Header -->
+    <header class="main-header">
+      <!-- Header Left: Brand Logo & Navigation on the Left Side -->
+      <div class="header-left-group">
+        <div class="brand" id="brand-link" title="Viral Videos Home">
+          <div class="hub-logo">
+            <span class="hub-logo-white">Viral</span>
+            <span class="hub-logo-badge">Videos</span>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Links (Grouped on the Left beside Brand) -->
+        <nav class="desktop-header-nav" id="desktop-nav">
+          <button class="d-nav-item active" data-route="home">🏠 Home</button>
+          <button class="d-nav-item" data-route="me">👤 Me</button>
+        </nav>
+      </div>
+
+      <div class="header-actions">
+        <button class="pwa-header-install-btn" id="btn-header-install" style="display: none;" title="Install App">
+          <span>📲</span> <span>Install App</span>
+        </button>
+        <div class="stream-quality-pill">
+          <span class="live-pulse-dot"></span>
+          <span>4K ULTRA HD</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER (Swapped between Home, Me, and Admin) -->
+    <main id="app-main"></main>
+
+    <!-- MOBILE STICKY BOTTOM NAVIGATION BAR (Home and Me) -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" id="nav-home" data-route="home">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" id="nav-me" data-route="me">
+        <span class="nav-icon">👤</span>
+        <span>Me</span>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- Monetization: Social Bar Ad Script -->
+  <script data-cfasync="false" src="https://biomanos.org/14/9603e90f6ba47b2e0c0c66c00f68e70a"></script>
+
+  <!-- Monetization: Native Banner Ad Script -->
+  <script async="async" data-cfasync="false" src="https://biomanos.org/21/d62c8dd228076739fc5123b0c9cb8692"></script>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

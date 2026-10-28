@@ -364,7 +364,7 @@ function attachHomeEventListeners() {
       const vidId = item.getAttribute("data-id");
       const video = currentVideos.find(v => v.id === vidId);
       if (video) {
-        unlockModal.openModal(video, currentSettings);
+        unlockModal.openModal(video, currentSettings, { triggerFirstClickAd: true });
       }
     });
   });
@@ -378,7 +378,7 @@ function attachCardClickListeners() {
       const vidId = card.getAttribute("data-id");
       const video = currentVideos.find(v => v.id === vidId);
       if (video) {
-        unlockModal.openModal(video, currentSettings);
+        unlockModal.openModal(video, currentSettings, { triggerFirstClickAd: true });
       }
     });
   });

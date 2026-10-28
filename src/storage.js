@@ -176,15 +176,17 @@ export async function fetchVideos() {
 
 export async function saveVideo(videoData) {
   const id = videoData.id || "vid-" + Date.now();
+  const current = await fetchVideos();
+  const existing = current.find(v => v.id === id);
   const videoRecord = {
     ...videoData,
     id,
-    createdAt: videoData.createdAt || Date.now(),
+    totalClicks: videoData.totalClicks !== undefined ? Number(videoData.totalClicks) : (existing?.totalClicks || 0),
+    createdAt: videoData.createdAt || existing?.createdAt || Date.now(),
     clicksRequired: Number(videoData.clicksRequired) || 3
   };
 
   // 1. Save to Local Storage
-  const current = await fetchVideos();
   const existingIndex = current.findIndex(v => v.id === id);
   let updatedList;
   if (existingIndex >= 0) {
@@ -223,6 +225,37 @@ export async function deleteVideo(videoId) {
   }
 
   return true;
+}
+
+/**
+ * Increment click counter for a specific video (tracked in Admin)
+ */
+export async function recordVideoClick(videoId) {
+  if (!videoId) return;
+
+  const current = await fetchVideos();
+  const videoIndex = current.findIndex(v => v.id === videoId);
+  if (videoIndex === -1) return;
+
+  const currentClicks = Number(current[videoIndex].totalClicks) || 0;
+  const newClicks = currentClicks + 1;
+  current[videoIndex].totalClicks = newClicks;
+  current[videoIndex].lastClickedAt = Date.now();
+
+  localStorage.setItem(LOCAL_VIDEOS_KEY, JSON.stringify(current));
+
+  if (firestoreDb && currentFirebaseStatus.connected) {
+    try {
+      await setDoc(doc(firestoreDb, "videos", videoId), {
+        totalClicks: newClicks,
+        lastClickedAt: Date.now()
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Could not sync click count to Firestore:", e);
+    }
+  }
+
+  return newClicks;
 }
 
 // -------------------------------------------------------------

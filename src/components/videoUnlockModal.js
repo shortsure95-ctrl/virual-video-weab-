@@ -1,4 +1,5 @@
 import { parseVideoUrl } from "../utils/googleDrive.js";
+import { recordVideoClick } from "../storage.js";
 
 /**
  * 3-Step Ad Monetization Video Unlock Modal
@@ -133,6 +134,9 @@ export function createVideoUnlockModal({ onToast }) {
   function openModal(video, settings) {
     activeVideo = video;
     globalSettings = settings || {};
+
+    // Track click analytics for Admin
+    recordVideoClick(video.id);
 
     // Check if user already unlocked this in current session
     const isAlreadyUnlocked = sessionStorage.getItem(`unlocked_${video.id}`) === "true";
@@ -323,6 +327,9 @@ export function createVideoUnlockModal({ onToast }) {
 
   function handleStepClick() {
     if (!activeVideo) return;
+
+    // Track click step event
+    recordVideoClick(activeVideo.id);
 
     // Get current ad link based on step (defaults to user's Adsterra Smart Link)
     const smartLinkDefault = "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af";

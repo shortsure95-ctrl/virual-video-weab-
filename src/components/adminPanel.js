@@ -165,8 +165,30 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
     const categories = await fetchCategories();
     const currentCat = editingVideo ? editingVideo.category : (categories[0] || "Movies");
 
+    const totalClicksAll = videos.reduce((sum, v) => sum + (Number(v.totalClicks) || 0), 0);
+    const sortedByClicks = [...videos].sort((a, b) => (Number(b.totalClicks) || 0) - (Number(a.totalClicks) || 0));
+    const mostClickedVid = sortedByClicks[0];
+
     const div = document.createElement("div");
     div.innerHTML = `
+      <!-- REALTIME CLICK TRACKER & ANALYTICS STATS -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
+        <div style="background: rgba(255, 183, 3, 0.08); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-md); padding: 12px; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase;">🔥 Total Video Clicks</div>
+          <div style="font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 4px;">${totalClicksAll.toLocaleString()}</div>
+        </div>
+        <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: var(--radius-md); padding: 12px; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase;">🎬 Active Videos</div>
+          <div style="font-size: 1.6rem; font-weight: 900; color: #fff; margin-top: 4px;">${videos.length}</div>
+        </div>
+        <div style="background: rgba(255, 42, 95, 0.08); border: 1px solid rgba(255, 42, 95, 0.25); border-radius: var(--radius-md); padding: 12px; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">🏆 Top Clicked Video</div>
+          <div style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${mostClickedVid ? mostClickedVid.title.split(':')[0] : 'None'} (${mostClickedVid?.totalClicks || 0} clicks)
+          </div>
+        </div>
+      </div>
+
       <!-- ADD / EDIT VIDEO FORM -->
       <div class="admin-card">
         <div class="admin-card-title">
@@ -276,7 +298,9 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
                   <span>•</span>
                   <span>${v.duration || 'Full Stream'}</span>
                   <span>•</span>
-                  <span style="color: var(--accent-gold);">★ ${v.rating || '9.0'}</span>
+                  <span style="background: rgba(255, 183, 3, 0.15); border: 1px solid rgba(255, 183, 3, 0.35); color: var(--accent-gold); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">
+                    🔥 ${v.totalClicks || 0} Clicks
+                  </span>
                 </div>
               </div>
               <div class="admin-actions">
@@ -410,6 +434,7 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
         thumbnail: parseThumbnailUrl(thumbnail),
         description: desc || "Exclusive high-definition streaming release.",
         clicksRequired: 3,
+        totalClicks: editingVideo ? (Number(editingVideo.totalClicks) || 0) : 0,
         customAdLinks: customAd ? [customAd, customAd, customAd] : [],
         createdAt: editingVideo ? editingVideo.createdAt : Date.now()
       };

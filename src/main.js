@@ -319,7 +319,7 @@ function renderVideoCards() {
         <h3 class="card-title">${v.title}</h3>
         <div class="card-meta-row">
           <span class="card-tag">${v.category || 'Movies'}</span>
-          <span class="card-views">★ ${v.rating || '8.8'}</span>
+          <span class="card-views">🔥 ${v.totalClicks ? `${v.totalClicks} clicks` : (v.views || '1.2M')}</span>
         </div>
       </div>
     </div>

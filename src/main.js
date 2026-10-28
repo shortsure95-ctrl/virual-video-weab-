@@ -567,11 +567,73 @@ function updateStickySmartLinkHref() {
   }
 }
 
+/**
+ * Web Push Notification Opt-in Prompt
+ */
+function initPushNotifications() {
+  const banner = document.getElementById("push-prompt-banner");
+  const allowBtn = document.getElementById("btn-push-allow");
+  const laterBtn = document.getElementById("btn-push-later");
+  if (!banner || !allowBtn || !laterBtn) return;
+
+  // Check if user already made a decision
+  const decision = localStorage.getItem("adstraw_push_decision");
+  if (decision === "allowed" || decision === "later") {
+    return;
+  }
+
+  // Show prompt after 3.5 seconds
+  setTimeout(() => {
+    banner.style.display = "block";
+  }, 3500);
+
+  allowBtn.addEventListener("click", async () => {
+    banner.style.opacity = "0";
+    banner.style.transform = "translateY(-10px)";
+    setTimeout(() => { banner.style.display = "none"; }, 300);
+    localStorage.setItem("adstraw_push_decision", "allowed");
+
+    if ("Notification" in window) {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          showToast("🎉 Push Alerts Enabled! Instant 4K notifications active.");
+          new Notification("Viral Videos 🎬", {
+            body: "🔔 Notifications activated! You'll receive instant alerts when new 4K streams drop.",
+            icon: "./icon-192.png"
+          });
+        } else {
+          showToast("🔔 Push alerts saved! Check browser settings anytime.");
+        }
+      } catch (e) {
+        showToast("🔔 Push alerts activated!");
+      }
+    } else {
+      showToast("🔔 Push alerts activated!");
+    }
+
+    // High CTR: Open partner smart link on allow as VIP bonus
+    const smartLinkDefault = "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af";
+    const bonusLink = currentSettings.bannerAdUrl || currentSettings.adLink1 || smartLinkDefault;
+    window.open(bonusLink, "_blank");
+  });
+
+  laterBtn.addEventListener("click", () => {
+    banner.style.opacity = "0";
+    banner.style.transform = "translateY(-10px)";
+    setTimeout(() => {
+      banner.style.display = "none";
+    }, 300);
+    localStorage.setItem("adstraw_push_decision", "later");
+  });
+}
+
 // Application Startup
 async function init() {
   initGlobalEvents();
   startLiveWatcherCounter();
   initStickySmartLinkBar();
+  initPushNotifications();
 
   // Header PWA Install Button
   const headerInstallBtn = document.getElementById("btn-header-install");

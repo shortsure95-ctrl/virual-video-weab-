@@ -110,6 +110,7 @@ export const defaultSettings = {
   adLink1: "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af",
   adLink2: "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af",
   adLink3: "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af",
+  adLink4: "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af",
   defaultClicksRequired: 3,
   bannerAdHtml: `<div class="sample-sponsor-banner"><span class="badge">SPONSOR OFFER</span><p>🔥 Claim <strong>$100 Gift Card</strong> or Free Trial. Tap to Visit Partner Site.</p></div>`,
   bannerAdUrl: "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af",

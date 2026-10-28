@@ -258,6 +258,30 @@ export async function recordVideoClick(videoId) {
   return newClicks;
 }
 
+/**
+ * Reset video clicks counter (Admin feature)
+ */
+export async function resetVideoClicks(videoId) {
+  const current = await fetchVideos();
+  const videoIndex = current.findIndex(v => v.id === videoId);
+  if (videoIndex === -1) return 0;
+
+  current[videoIndex].totalClicks = 0;
+  localStorage.setItem(LOCAL_VIDEOS_KEY, JSON.stringify(current));
+
+  if (firestoreDb && currentFirebaseStatus.connected) {
+    try {
+      await setDoc(doc(firestoreDb, "videos", videoId), {
+        totalClicks: 0
+      }, { merge: true });
+    } catch (e) {
+      console.warn("Could not sync reset clicks to Firestore:", e);
+    }
+  }
+
+  return 0;
+}
+
 // -------------------------------------------------------------
 // SETTINGS CRUD
 // -------------------------------------------------------------

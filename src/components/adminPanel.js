@@ -16,7 +16,8 @@ import {
   getCurrentAdminEmail,
   isCurrentlyAdminAuthenticated,
   setAdminSession,
-  clearAdminSession
+  clearAdminSession,
+  resetVideoClicks
 } from "../storage.js";
 import { parseVideoUrl, parseThumbnailUrl } from "../utils/googleDrive.js";
 import { auth, googleProvider, signInWithPopup, signOut } from "../firebase.js";
@@ -263,12 +264,50 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
             <textarea id="form-v-desc" class="form-textarea" placeholder="Brief synopsis or teaser for viewers...">${editingVideo ? (editingVideo.description || '') : ''}</textarea>
           </div>
 
-          <!-- OPTIONAL CUSTOM AD OVERRIDE -->
-          <div class="form-group" style="padding: 12px; background: rgba(255,42,95,0.06); border: 1px solid rgba(255,42,95,0.2); border-radius: var(--radius-sm);">
-            <label class="form-label" style="color: var(--primary);">Custom Ad Link for This Video (Optional)</label>
-            <input type="url" id="form-v-ad" class="form-input" placeholder="Leave empty to use Global 3-Step Ad Links" value="${editingVideo?.customAdLinks?.[0] || ''}" />
-            <div class="form-help">
-              If left blank, clicks will automatically open your global 3-Step ad links configured in <strong>Ad Gateways</strong>.
+          <!-- UNLOCK STEP CONTROLLER (1-Step, 2-Step, 3-Step, or 4-Step) -->
+          <div class="form-group" style="padding: 14px; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: var(--radius-md);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <label class="form-label" style="color: var(--secondary); margin-bottom: 0;">Unlock Gate Steps (1 to 4 Clicks) *</label>
+              <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 800;">Ad Gate Controller</span>
+            </div>
+            <select id="form-v-clicks" class="form-select" style="font-weight: 700;">
+              <option value="1" ${(editingVideo?.clicksRequired === 1) ? 'selected' : ''}>⚡ 1 Step (Instant 1-Click Unlock - Fastest & Highest Conversion)</option>
+              <option value="2" ${(editingVideo?.clicksRequired === 2) ? 'selected' : ''}>🎯 2 Steps (2 Clicks - Balanced)</option>
+              <option value="3" ${(!editingVideo || editingVideo?.clicksRequired === 3 || !editingVideo?.clicksRequired) ? 'selected' : ''}>🔥 3 Steps (Standard 3-Click Ad Gate)</option>
+              <option value="4" ${(editingVideo?.clicksRequired === 4) ? 'selected' : ''}>💎 4 Steps (4 Clicks - Maximum Monetization for Viral Hits)</option>
+            </select>
+            <div class="form-help">Choose how many sponsor link clicks a user must complete to unlock this video stream.</div>
+          </div>
+
+          <!-- PER-VIDEO DEDICATED CUSTOM AD LINKS (1 to 4 STEPS) -->
+          <div style="margin-bottom: 16px; padding: 14px; background: rgba(255, 183, 3, 0.05); border: 1px solid rgba(255, 183, 3, 0.25); border-radius: var(--radius-md);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 800; color: var(--accent-gold); font-size: 0.85rem;">
+                🎯 Custom Ad Links for This Video (Optional)
+              </span>
+              <span style="font-size: 0.7rem; color: var(--text-dim);">High-CPM SmartLinks</span>
+            </div>
+            <p style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+              Set dedicated high-CPM SmartLinks for this video (e.g. if traffic is coming from TikTok or Facebook). Leave any field empty to use the global site defaults.
+            </p>
+
+            <div style="display: grid; gap: 8px;">
+              <div>
+                <label style="font-size: 0.72rem; color: var(--primary); font-weight: 700;">Step 1 Smart Link:</label>
+                <input type="url" id="form-v-ad-1" class="form-input" style="font-size: 0.78rem; padding: 7px 10px;" placeholder="Leave empty for Global Step 1 Link" value="${editingVideo?.customAdLinks?.[0] || ''}" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--accent-gold); font-weight: 700;">Step 2 Smart Link:</label>
+                <input type="url" id="form-v-ad-2" class="form-input" style="font-size: 0.78rem; padding: 7px 10px;" placeholder="Leave empty for Global Step 2 Link" value="${editingVideo?.customAdLinks?.[1] || ''}" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--secondary); font-weight: 700;">Step 3 Smart Link:</label>
+                <input type="url" id="form-v-ad-3" class="form-input" style="font-size: 0.78rem; padding: 7px 10px;" placeholder="Leave empty for Global Step 3 Link" value="${editingVideo?.customAdLinks?.[2] || ''}" />
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; color: var(--accent-purple); font-weight: 700;">Step 4 Smart Link:</label>
+                <input type="url" id="form-v-ad-4" class="form-input" style="font-size: 0.78rem; padding: 7px 10px;" placeholder="Leave empty for Global Step 4 Link" value="${editingVideo?.customAdLinks?.[3] || ''}" />
+              </div>
             </div>
           </div>
 
@@ -280,7 +319,7 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
         </form>
       </div>
 
-      <!-- EXISTING VIDEOS LIST -->
+      <!-- EXISTING VIDEOS LIST WITH LIVE CLICK ANALYTICS -->
       <div class="admin-card">
         <div class="admin-card-title">
           <span>Uploaded Videos (${videos.length})</span>
@@ -288,12 +327,14 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
 
         <div class="admin-video-list" id="admin-video-list">
           ${videos.length === 0 ? '<p style="color: var(--text-dim); text-align: center; padding: 20px;">No videos uploaded yet. Add your first video above!</p>' : ''}
-          ${videos.map(v => `
+          ${videos.map(v => {
+            const hasCustomAds = v.customAdLinks && v.customAdLinks.some(l => l && l.trim());
+            return `
             <div class="admin-video-item" data-id="${v.id}">
               <img src="${v.thumbnail}" class="admin-video-thumb" alt="${v.title}" onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=200&q=80'" />
               <div class="admin-video-info">
                 <div class="admin-video-title">${v.title}</div>
-                <div class="admin-video-meta">
+                <div class="admin-video-meta" style="flex-wrap: wrap; gap: 6px;">
                   <span style="color: var(--secondary);">${v.category || 'Movies'}</span>
                   <span>•</span>
                   <span>${v.duration || 'Full Stream'}</span>
@@ -301,9 +342,21 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
                   <span style="background: rgba(255, 183, 3, 0.15); border: 1px solid rgba(255, 183, 3, 0.35); color: var(--accent-gold); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">
                     🔥 ${v.totalClicks || 0} Clicks
                   </span>
+                  <span>•</span>
+                  <span style="background: rgba(0, 229, 255, 0.12); border: 1px solid rgba(0, 229, 255, 0.3); color: var(--secondary); padding: 2px 7px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">
+                    ⚡ ${v.clicksRequired || 3} Steps
+                  </span>
+                  ${hasCustomAds ? `
+                    <span style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 2px 7px; border-radius: 6px; font-size: 0.68rem; font-weight: 700;">
+                      Custom Ads
+                    </span>
+                  ` : ''}
                 </div>
               </div>
               <div class="admin-actions">
+                <button class="btn-secondary btn-reset-clicks" data-id="${v.id}" style="padding: 4px 8px; font-size: 0.72rem; color: var(--text-dim);" title="Reset Clicks to 0">
+                  🔄 Reset
+                </button>
                 <button class="btn-secondary btn-edit-vid" data-id="${v.id}" style="padding: 4px 8px; font-size: 0.72rem;" title="Edit">
                   ✏️ Edit
                 </button>
@@ -312,7 +365,8 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
                 </button>
               </div>
             </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -411,7 +465,13 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
       const videoUrl = document.getElementById("form-v-url").value.trim();
       const thumbnail = document.getElementById("form-v-thumb").value.trim();
       const desc = document.getElementById("form-v-desc").value.trim();
-      const customAd = document.getElementById("form-v-ad").value.trim();
+      const clicksRequired = parseInt(document.getElementById("form-v-clicks").value, 10) || 3;
+      
+      const ad1 = document.getElementById("form-v-ad-1")?.value.trim() || "";
+      const ad2 = document.getElementById("form-v-ad-2")?.value.trim() || "";
+      const ad3 = document.getElementById("form-v-ad-3")?.value.trim() || "";
+      const ad4 = document.getElementById("form-v-ad-4")?.value.trim() || "";
+      const customAdLinks = [ad1, ad2, ad3, ad4];
 
       // Check if new category was typed in row but not submitted
       if (newCatRow.style.display !== "none" && newCatInput.value.trim()) {
@@ -433,9 +493,9 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
         videoUrl,
         thumbnail: parseThumbnailUrl(thumbnail),
         description: desc || "Exclusive high-definition streaming release.",
-        clicksRequired: 3,
+        clicksRequired,
         totalClicks: editingVideo ? (Number(editingVideo.totalClicks) || 0) : 0,
-        customAdLinks: customAd ? [customAd, customAd, customAd] : [],
+        customAdLinks,
         createdAt: editingVideo ? editingVideo.createdAt : Date.now()
       };
 
@@ -453,6 +513,19 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
         render();
       });
     }
+
+    // Reset video clicks handler
+    div.querySelectorAll(".btn-reset-clicks").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-id");
+        const vid = videos.find(v => v.id === id);
+        if (confirm(`Reset all clicks for "${vid?.title || 'this video'}" back to 0?`)) {
+          await resetVideoClicks(id);
+          onToast("🔥 Click counter reset to 0!");
+          render();
+        }
+      });
+    });
 
     // Edit video clicks
     div.querySelectorAll(".btn-edit-vid").forEach(btn => {
@@ -477,47 +550,62 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
   }
 
   // -------------------------------------------------------------
-  // TAB 2: 3-STEP AD GATEWAY SETTINGS
+  // TAB 2: AD GATEWAYS & MONETIZATION SETTINGS
   // -------------------------------------------------------------
   function renderAdsTab(container, settings) {
     const div = document.createElement("div");
     div.innerHTML = `
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>💰 3-Step Ad Redirection System</span>
+          <span>💰 Ad Gateways & Monetization Settings</span>
         </div>
         <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">
-          When a user clicks "Watch Video", the system requires 3 clicks to unlock. 
-          Configure the exact ad URLs or affiliate links that open on each step.
+          Configure global SmartLink ad URLs for 1, 2, 3, or 4 step video unlocks, as well as the Mobile Sticky VIP Pass banner.
         </p>
 
         <form id="ads-form">
           <div class="form-group">
             <label class="form-label" style="color: var(--primary);">
-              ⚡ Step 1 Ad Link (1st Click Redirect) *
+              ⚡ Step 1 Smart Link (1st Click Redirect) *
             </label>
             <input type="url" id="ad-link-1" class="form-input" value="${settings.adLink1 || ''}" placeholder="https://highcpmpartner.com/ad-step-1" required />
-            <div class="form-help">Opens on 1st tap. Progress moves to 33%.</div>
+            <div class="form-help">Opens on 1st tap. Mandatory for all gates.</div>
           </div>
 
           <div class="form-group">
             <label class="form-label" style="color: var(--accent-gold);">
-              🔥 Step 2 Ad Link (2nd Click Redirect) *
+              🔥 Step 2 Smart Link (2nd Click Redirect)
             </label>
-            <input type="url" id="ad-link-2" class="form-input" value="${settings.adLink2 || ''}" placeholder="https://highcpmpartner.com/ad-step-2" required />
-            <div class="form-help">Opens on 2nd tap. Progress moves to 66%.</div>
+            <input type="url" id="ad-link-2" class="form-input" value="${settings.adLink2 || ''}" placeholder="https://highcpmpartner.com/ad-step-2" />
+            <div class="form-help">Opens on 2nd tap if video has 2, 3, or 4 steps.</div>
           </div>
 
           <div class="form-group">
             <label class="form-label" style="color: var(--secondary);">
-              🚀 Step 3 Ad Link (3rd Final Click Redirect & Unlock) *
+              🚀 Step 3 Smart Link (3rd Click Redirect)
             </label>
-            <input type="url" id="ad-link-3" class="form-input" value="${settings.adLink3 || ''}" placeholder="https://highcpmpartner.com/ad-step-3" required />
-            <div class="form-help">Opens on 3rd tap, then <strong>instantly unlocks</strong> the Google Drive video player!</div>
+            <input type="url" id="ad-link-3" class="form-input" value="${settings.adLink3 || ''}" placeholder="https://highcpmpartner.com/ad-step-3" />
+            <div class="form-help">Opens on 3rd tap if video has 3 or 4 steps.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="color: var(--accent-purple);">
+              💎 Step 4 Smart Link (4th Click Redirect & Unlock)
+            </label>
+            <input type="url" id="ad-link-4" class="form-input" value="${settings.adLink4 || ''}" placeholder="https://highcpmpartner.com/ad-step-4" />
+            <div class="form-help">Opens on 4th tap when 4-Step gate is enabled for maximum earnings.</div>
+          </div>
+
+          <div class="form-group" style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-glass);">
+            <label class="form-label" style="color: var(--accent-success);">
+              📱 Mobile Sticky VIP Banner Link *
+            </label>
+            <input type="url" id="sticky-banner-link" class="form-input" value="${settings.bannerAdUrl || 'https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af'}" placeholder="https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af" required />
+            <div class="form-help">Opens when mobile users tap the floating <strong>⚡ Tap to Claim 4K VIP Pass</strong> bar at bottom.</div>
           </div>
 
           <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">
-            💾 Save Ad Settings
+            💾 Save All Ad Settings
           </button>
         </form>
       </div>
@@ -531,14 +619,18 @@ export function createAdminPanel({ container, onToast, onNavigateHome }) {
       const adLink1 = document.getElementById("ad-link-1").value.trim();
       const adLink2 = document.getElementById("ad-link-2").value.trim();
       const adLink3 = document.getElementById("ad-link-3").value.trim();
+      const adLink4 = document.getElementById("ad-link-4").value.trim();
+      const bannerAdUrl = document.getElementById("sticky-banner-link").value.trim();
 
       await saveSettings({
         adLink1,
         adLink2,
-        adLink3
+        adLink3,
+        adLink4: adLink4 || adLink1,
+        bannerAdUrl: bannerAdUrl || adLink1
       });
 
-      onToast("💰 Ad Gateways saved to Firebase!");
+      onToast("💰 All Ad Gateways & Sticky Links saved!");
       render();
     });
   }

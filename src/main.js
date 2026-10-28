@@ -310,7 +310,7 @@ function renderVideoCards() {
       <div class="card-poster">
         <img src="${v.thumbnail}" class="card-img" alt="${v.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80'" />
         <span class="card-badge-top-left">${v.quality || 'HD 1080p'}</span>
-        <span class="card-badge-top-right">3 Steps</span>
+        <span class="card-badge-top-right">${v.clicksRequired || 3} Step${(v.clicksRequired || 3) > 1 ? 's' : ''}</span>
         <div class="card-play-overlay">
           <div class="play-circle">▶</div>
         </div>
@@ -511,9 +511,66 @@ function handleHashRoute() {
   }
 }
 
+/**
+ * Animated Live Watcher Counter (Social Proof)
+ * Fluctuates naturally between 1,350 and 1,890 viewers
+ */
+function startLiveWatcherCounter() {
+  const countEl = document.getElementById("live-watcher-count");
+  if (!countEl) return;
+
+  let currentCount = 1482;
+
+  setInterval(() => {
+    const delta = Math.floor(Math.random() * 9) - 4; // -4 to +4
+    currentCount = Math.max(1340, Math.min(1890, currentCount + delta));
+    countEl.classList.add("count-update");
+    countEl.textContent = currentCount.toLocaleString();
+    setTimeout(() => countEl.classList.remove("count-update"), 400);
+  }, 4800);
+}
+
+/**
+ * Mobile Sticky Smart Link VIP Bar
+ */
+function initStickySmartLinkBar() {
+  const bar = document.getElementById("sticky-smartlink-bar");
+  const closeBtn = document.getElementById("sticky-bar-close");
+  if (!bar) return;
+
+  // Check if user dismissed it in this browser session
+  if (sessionStorage.getItem("dismissed_sticky_bar") === "true") {
+    bar.style.display = "none";
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      bar.style.opacity = "0";
+      bar.style.transform = "translateY(20px)";
+      setTimeout(() => {
+        bar.style.display = "none";
+      }, 300);
+      sessionStorage.setItem("dismissed_sticky_bar", "true");
+    });
+  }
+
+  updateStickySmartLinkHref();
+}
+
+function updateStickySmartLinkHref() {
+  const btn = document.getElementById("sticky-smartlink-btn");
+  if (btn) {
+    btn.href = currentSettings.bannerAdUrl || currentSettings.adLink1 || "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af";
+  }
+}
+
 // Application Startup
 async function init() {
   initGlobalEvents();
+  startLiveWatcherCounter();
+  initStickySmartLinkBar();
 
   // Header PWA Install Button
   const headerInstallBtn = document.getElementById("btn-header-install");
@@ -540,6 +597,7 @@ async function init() {
     currentVideos = await fetchVideos();
     currentSettings = await fetchSettings();
     currentCategories = await fetchCategories();
+    updateStickySmartLinkHref();
   } catch (e) {
     console.warn("Initial data load note:", e);
   }
@@ -557,6 +615,7 @@ async function init() {
     },
     onSettingsChange: (newSettings) => {
       currentSettings = newSettings;
+      updateStickySmartLinkHref();
       if (currentRoute === "home") {
         renderHomeView();
       } else if (currentRoute === "me") {

@@ -50,10 +50,23 @@ const unlockModal = createVideoUnlockModal({
   onToast: showToast
 });
 
-// Register Service Worker for PWA (relative path for GitHub Pages)
+// Register Service Worker for PWA with auto-update & cache purge
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
+    // Clean up any stale client caches from earlier builds
+    if ("caches" in window) {
+      caches.keys().then((keys) => {
+        keys.forEach((key) => {
+          if (key !== "viral-videos-v3.0") {
+            caches.delete(key);
+          }
+        });
+      }).catch(() => {});
+    }
+
     navigator.serviceWorker.register("./sw.js").then((reg) => {
+      // Force immediate check for new sw.js
+      reg.update().catch(() => {});
       console.log("PWA Service Worker registered:", reg.scope);
     }).catch((err) => {
       console.warn("PWA Service Worker registration skipped:", err);

@@ -2,9 +2,9 @@
   "name": "Viral Videos - Watch Trending US HD Movies & Viral Reels",
   "short_name": "Viral Videos",
   "description": "Watch trending full movies, viral reels, and exclusive Hollywood clips in 4K HDR. High-speed, mobile-optimized streaming.",
-  "start_url": "/",
-  "id": "/",
-  "scope": "/",
+  "start_url": "./",
+  "id": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#07090e",
@@ -14,31 +14,31 @@
   "categories": ["entertainment", "video", "movies"],
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable-192.png",
+      "src": "./icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-maskable-512.png",
+      "src": "./icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/favicon.svg",
+      "src": "./favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -47,12 +47,12 @@
   "shortcuts": [
     {
       "name": "Home Streams",
-      "url": "/#home",
+      "url": "./#home",
       "description": "Watch trending 4K movies and viral clips"
     },
     {
       "name": "My Referrals",
-      "url": "/#me",
+      "url": "./#me",
       "description": "View referral link and Telegram username"
     }
   ]

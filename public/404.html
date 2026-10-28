@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viral Videos</title>
+    <script>
+      // Redirect SPA routes back to app index
+      const pathname = window.location.pathname;
+      const repoBase = "/virual-video-weab-/";
+      if (!pathname.endsWith("/")) {
+        window.location.replace(window.location.origin + repoBase);
+      } else {
+        window.location.replace("./");
+      }
+    </script>
+    <meta http-equiv="refresh" content="0;URL='./'">
+  </head>
+  <body style="background:#07090e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+    <p>Redirecting to Viral Videos...</p>
+  </body>
+</html>

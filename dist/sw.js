@@ -1,12 +1,12 @@
 // AdStraw / Viral Videos PWA Service Worker
-const CACHE_NAME = 'viral-videos-v1.1';
+const CACHE_NAME = 'viral-videos-v2.0';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/favicon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/manifest.webmanifest'
+  './',
+  './index.html',
+  './favicon.svg',
+  './icon-192.png',
+  './icon-512.png',
+  './manifest.webmanifest'
 ];
 
 // Install: Cache initial static shell

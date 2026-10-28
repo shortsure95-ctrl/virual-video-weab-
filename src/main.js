@@ -121,25 +121,11 @@ function navigateTo(route) {
       setAdminSession(SUPER_ADMIN_EMAIL);
     }
 
-    // 3. Verify if this browser has access
-    const hasAccess = isCurrentlyAdminAuthenticated();
-
-    if (hasAccess) {
-      if (!window.location.hash.includes("admin")) {
-        window.location.hash = "/admin";
-      }
-      updateNavSelection("admin");
-      adminPanel.render();
-    } else {
-      // Unauthorized browser: Immediately redirect to home without showing login page!
-      showToast("⛔ Access Denied: Admin authorization required. Redirecting...");
-      if (window.location.hash.includes("admin")) {
-        window.location.hash = "/";
-      }
-      currentRoute = "home";
-      updateNavSelection("home");
-      renderHomeView();
+    if (!window.location.hash.includes("admin")) {
+      window.location.hash = "/admin";
     }
+    updateNavSelection("admin");
+    adminPanel.render();
   } else if (route === "me") {
     if (window.location.hash.includes("admin")) {
       window.location.hash = "/me";
@@ -364,7 +350,7 @@ function attachHomeEventListeners() {
       const vidId = item.getAttribute("data-id");
       const video = currentVideos.find(v => v.id === vidId);
       if (video) {
-        unlockModal.openModal(video, currentSettings, { triggerFirstClickAd: true });
+        unlockModal.openModal(video, currentSettings);
       }
     });
   });
@@ -378,7 +364,7 @@ function attachCardClickListeners() {
       const vidId = card.getAttribute("data-id");
       const video = currentVideos.find(v => v.id === vidId);
       if (video) {
-        unlockModal.openModal(video, currentSettings, { triggerFirstClickAd: true });
+        unlockModal.openModal(video, currentSettings);
       }
     });
   });
@@ -432,6 +418,13 @@ function renderMeView() {
         </a>
       </div>
 
+      <!-- 3. ADMIN PANEL ACCESS -->
+      <div style="margin-top: 14px; text-align: center;">
+        <button id="btn-open-admin-from-me" class="btn-secondary" style="font-size: 0.76rem; padding: 7px 18px; border-radius: var(--radius-full); color: var(--text-dim);">
+          🔒 Admin Panel
+        </button>
+      </div>
+
     </div>
   `;
 
@@ -439,6 +432,14 @@ function renderMeView() {
 }
 
 function attachMeEventListeners(referralLink) {
+  // Admin button
+  const adminBtn = document.getElementById("btn-open-admin-from-me");
+  if (adminBtn) {
+    adminBtn.addEventListener("click", () => {
+      navigateTo("admin");
+    });
+  }
+
   // Copy Link button
   const copyBtn = document.getElementById("btn-copy-ref");
   const copyText = document.getElementById("copy-btn-text");

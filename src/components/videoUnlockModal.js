@@ -150,33 +150,7 @@ export function createVideoUnlockModal({ onToast }) {
     }
   }
 
-  /**
-   * Opens ad in background tab on PC/browsers
-   * Keeps current window focused so user remains on fresh video site
-   */
-  function openAdInBackground(url) {
-    if (!url) return;
-    try {
-      const adTab = window.open(url, "_blank");
-      if (adTab) {
-        try {
-          adTab.blur();
-        } catch (e) {}
-      }
-      window.focus();
-    } catch (err) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.focus();
-    }
-  }
-
-  function openModal(video, settings, options = {}) {
+  function openModal(video, settings) {
     activeVideo = video;
     globalSettings = settings || {};
 
@@ -190,28 +164,7 @@ export function createVideoUnlockModal({ onToast }) {
 
     // Check if user already unlocked this in current session
     const isAlreadyUnlocked = sessionStorage.getItem(`unlocked_${video.id}`) === "true";
-
-    if (isAlreadyUnlocked) {
-      currentStep = totalSteps;
-    } else {
-      if (options.triggerFirstClickAd) {
-        // First click on video triggers Step 1 ad in background tab
-        const smartLinkDefault = "https://apiguinee.org/4/0f38298c6cfc407ecb309e4a05a945af";
-        const step1AdUrl = activeVideo.customAdLinks?.[0] || globalSettings.adLink1 || smartLinkDefault;
-        
-        openAdInBackground(step1AdUrl);
-        currentStep = 1;
-
-        if (totalSteps === 1) {
-          sessionStorage.setItem(`unlocked_${video.id}`, "true");
-          if (onToast) onToast("🎉 1-Step Unlocked! (Sponsor opened in background tab)");
-        } else {
-          if (onToast) onToast(`⚡ Step 1 completed! Sponsor opened in background tab.`);
-        }
-      } else {
-        currentStep = 0;
-      }
-    }
+    currentStep = isAlreadyUnlocked ? totalSteps : 0;
 
     titleEl.textContent = video.title;
     descEl.textContent = video.description || "Stream direct in full high definition quality.";
@@ -229,7 +182,6 @@ export function createVideoUnlockModal({ onToast }) {
     updateFunnelUI();
 
     modalEl.classList.add("open");
-    window.focus();
   }
 
   function closeModal() {
@@ -427,15 +379,15 @@ export function createVideoUnlockModal({ onToast }) {
       if (currentStep >= totalSteps) {
         // Store unlock in sessionStorage
         sessionStorage.setItem(`unlocked_${activeVideo.id}`, "true");
-        openAdInBackground(targetAdUrl);
+        window.open(targetAdUrl, "_blank");
         updateFunnelUI();
         renderMediaPreview();
         if (onToast) onToast(`🎉 All ${totalSteps} step(s) completed! Full video unlocked!`);
       } else {
-        openAdInBackground(targetAdUrl);
+        window.open(targetAdUrl, "_blank");
         updateFunnelUI();
         renderMediaPreview();
-        if (onToast) onToast(`Step ${currentStep}/${totalSteps} verified! Sponsor opened in background tab.`);
+        if (onToast) onToast(`Step ${currentStep}/${totalSteps} verified! Sponsor offer opened.`);
       }
     } else {
       // Already unlocked: scroll smoothly to player

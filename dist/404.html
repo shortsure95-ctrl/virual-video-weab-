@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viral Videos</title>
     <script>
-      // Redirect SPA routes back to app index
-      const pathname = window.location.pathname;
-      const repoBase = "/virual-video-weab-/";
-      if (!pathname.endsWith("/")) {
-        window.location.replace(window.location.origin + repoBase);
+      // Clean SPA routing redirect for ratan.ami.bd and github.io
+      const host = window.location.hostname;
+      if (host.includes("ami.bd") || host === "ratan.ami.bd") {
+        window.location.replace(window.location.origin + "/");
+      } else if (host.includes("github.io") && !window.location.pathname.startsWith("/virual-video-weab-")) {
+        window.location.replace("https://shortsure95-ctrl.github.io/virual-video-weab-/");
       } else {
-        window.location.replace("./");
+        window.location.replace(window.location.origin + window.location.pathname.replace(/\/+$/, "") + "/");
       }
     </script>
-    <meta http-equiv="refresh" content="0;URL='./'">
+    <meta http-equiv="refresh" content="0;URL='/'">
   </head>
   <body style="background:#07090e;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
     <p>Redirecting to Viral Videos...</p>
